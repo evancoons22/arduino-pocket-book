@@ -44,6 +44,7 @@ void setup() {
     server.onNotFound([]() {
             if(!handleFileRead(server.uri())){
             const char *metaRefreshStr = "<head><meta http-equiv=\"refresh\" content=\"0; url=http://192.168.4.1/index.html\" /></head><body><p>redirecting...</p></body>";
+            Serial.println("Serving index.html");
             server.send(200, "text/html", metaRefreshStr);
             }
             });
@@ -60,6 +61,8 @@ void loop() {
 
 
 String getContentType(String filename){
+    // print content type to Serial monitor
+    Serial.print("serving file");
     if(server.hasArg("download")) return "application/octet-stream";
     else if(filename.endsWith(".htm")) return "text/html";
     else if(filename.endsWith(".html")) return "text/html";
@@ -74,6 +77,7 @@ String getContentType(String filename){
     else if(filename.endsWith(".pdf")) return "application/x-pdf";
     else if(filename.endsWith(".zip")) return "application/x-zip";
     else if(filename.endsWith(".gz")) return "application/x-gzip";
+    //else if(filename.endsWith(".mp3")) return "audio/mpeg";
     return "text/plain";
 }
 
