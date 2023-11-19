@@ -21,12 +21,11 @@
 <body>
     <h1>Hello</h1>
     <p>Go to <a href="http://192.168.4.1">192.168.4.1</a> on a web browser.</p>
-    <!--
     <audio controls>
         <source src="FTyouareloved.mp3" type="audio/mpeg">
         Your browser does not support audio
     </audio>
-
+    <!--
     <h3> Books </h3>
     <p>Click <a href="http://192.168.4.1/animalfarm.html">Animal Farm</a> for a book</p>
     -->
@@ -44,24 +43,10 @@
     <div id="messages"></div>
 
     <script>
-        window.onload = getMessages;
-
-        function send1Message() {
-            var xhr = new XMLHttpRequest();
-            var url = "http://192.168.4.1/post-message";
-            var message = document.getElementById("messageBox").value;
-
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("Content-Type", "text/plain");
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    alert(xhr.responseText);
-                }
-            };
-
-            xhr.send(message);
-        }
+        window.onload = function() {
+            getMessages();
+            setInterval(getMessages, 5000);
+        };
 
         function sendMessage() {
             var xhr = new XMLHttpRequest();

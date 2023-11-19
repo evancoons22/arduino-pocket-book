@@ -39,6 +39,7 @@ void setup() {
     //File system begin
     SPIFFS.begin();
 
+    server.on("/delete-messages", HTTP_POST, deleteMessagesHandler);
     server.on("/post-message", HTTP_POST, postMessageHandler);
     server.on("/get-messages", HTTP_GET, getMessagesHandler);
 
@@ -87,6 +88,16 @@ void postMessageHandler() {
     String name = server.arg("name");
     String message = server.arg("message");
 
+    
+    // Check if the name and the message are not empty
+
+    /*
+    if (name.trim().length() == 0 || message.trim().length() == 0) {
+        server.send(400, "text/plain", "Name or message cannot be empty");
+        return;
+    }
+    */
+
     File file = SPIFFS.open("/data.txt", "a");
     if (!file) {
         server.send(500, "text/plain", "Failed to open file for appending");
@@ -99,31 +110,30 @@ void postMessageHandler() {
     server.send(200, "text/plain", "Message received and stored");
 }
 
-void badpostMessageHandler() {
-    String message;
-    if (server.hasArg("plain") == false) {
-        message = "No message received";
-        server.send(200, "text/plain", message);
+
+const String DELETE_PASSWORD = "delete";
+
+void deleteMessagesHandler() {
+    if (!server.hasArg("password")) {
+        server.send(400, "text/plain", "Password is missing");
         return;
     }
 
-    message = server.arg("plain");
+    String password = server.arg("password");
 
-    // Open the file for appending
-    File file = SPIFFS.open("/data.txt", "a");
-    if (!file) {
-        server.send(500, "text/plain", "Failed to open file for appending");
+    // Check if the password matches
+    if (password != DELETE_PASSWORD) {
+        server.send(403, "text/plain", "Unauthorized access");
         return;
     }
 
-    // Append the message to the file
-    file.println(message);
-    file.close();
+    if (!SPIFFS.remove("/data.txt")) {
+        server.send(500, "text/plain", "Failed to delete messages");
+        return;
+    }
 
-    // Respond back to the client
-    server.send(200, "text/plain", "Message received and stored");
+    server.send(200, "text/plain", "All messages deleted");
 }
-
 
 String getContentType(String filename){
     // print content type to Serial monitor
