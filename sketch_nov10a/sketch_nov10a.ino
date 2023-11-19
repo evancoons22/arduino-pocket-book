@@ -62,45 +62,66 @@ void loop() {
 }
 
 void getMessagesHandler() {
-  File file = SPIFFS.open("/data.txt", "r");
-  if (!file) {
-    server.send(500, "text/plain", "Failed to open file for reading");
-    return;
-  }
+    File file = SPIFFS.open("/data.txt", "r");
+    if (!file) {
+        server.send(500, "text/plain", "Failed to open file for reading");
+        return;
+    }
 
-  String fileContent;
-  while(file.available()){
-    fileContent += (char)file.read();
-  }
+    String fileContent;
+    while(file.available()){
+        fileContent += (char)file.read();
+    }
 
-  file.close();
+    file.close();
 
-  server.send(200, "text/plain", fileContent);
+    server.send(200, "text/plain", fileContent);
 }
 
 void postMessageHandler() {
-  String message;
-  if (server.hasArg("plain") == false) {
-    message = "No message received";
-    server.send(200, "text/plain", message);
-    return;
-  }
+    if (!server.hasArg("name") || !server.hasArg("message")) {
+        server.send(400, "text/plain", "Name or message is missing");
+        return;
+    }
 
-  message = server.arg("plain");
+    String name = server.arg("name");
+    String message = server.arg("message");
 
-  // Open the file for appending
-  File file = SPIFFS.open("/data.txt", "a");
-  if (!file) {
-    server.send(500, "text/plain", "Failed to open file for appending");
-    return;
-  }
+    File file = SPIFFS.open("/data.txt", "a");
+    if (!file) {
+        server.send(500, "text/plain", "Failed to open file for appending");
+        return;
+    }
 
-  // Append the message to the file
-  file.println(message);
-  file.close();
+    file.println(name + ": " + message);
+    file.close();
 
-  // Respond back to the client
-  server.send(200, "text/plain", "Message received and stored");
+    server.send(200, "text/plain", "Message received and stored");
+}
+
+void badpostMessageHandler() {
+    String message;
+    if (server.hasArg("plain") == false) {
+        message = "No message received";
+        server.send(200, "text/plain", message);
+        return;
+    }
+
+    message = server.arg("plain");
+
+    // Open the file for appending
+    File file = SPIFFS.open("/data.txt", "a");
+    if (!file) {
+        server.send(500, "text/plain", "Failed to open file for appending");
+        return;
+    }
+
+    // Append the message to the file
+    file.println(message);
+    file.close();
+
+    // Respond back to the client
+    server.send(200, "text/plain", "Message received and stored");
 }
 
 

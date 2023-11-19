@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome Page</title>
+    <title>Little Arduino</title>
+    <style>
+        #messageBox {
+            width: 50%;
+            height: 100px; /* Larger text area for messages */
+        }
+
+        .message-name {
+            color: blue;
+            font-weight: bold;
+        }
+
+        #chat-container {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Hello</h1>
     <p>Go to <a href="http://192.168.4.1">192.168.4.1</a> on a web browser.</p>
-
-
     <!--
     <audio controls>
         <source src="FTyouareloved.mp3" type="audio/mpeg">
@@ -19,14 +32,21 @@
     -->
 
     <h2>Chat Room</h2>
-    <input type="text" id="messageBox" placeholder="Type your message here"/>
-    <button onclick="sendMessage()">Send</button>
-    <br> </br>
-    <button onclick="getMessages()">Refresh Messages</button>
+    <div id="chat-container">
+        <input type="text" id="nameBox" placeholder="Enter your name"/>
+        <br>
+        <textarea id="messageBox" placeholder="Type your message here"></textarea>
+        <br>
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="getMessages()">Refresh Messages</button>
+    </div>
+
     <div id="messages"></div>
 
     <script>
-        function sendMessage() {
+        window.onload = getMessages;
+
+        function send1Message() {
             var xhr = new XMLHttpRequest();
             var url = "http://192.168.4.1/post-message";
             var message = document.getElementById("messageBox").value;
@@ -43,6 +63,27 @@
             xhr.send(message);
         }
 
+        function sendMessage() {
+            var xhr = new XMLHttpRequest();
+            var url = "http://192.168.4.1/post-message";
+            var name = document.getElementById("nameBox").value;
+            var message = document.getElementById("messageBox").value;
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById("messageBox").value = '';
+                    // alert(xhr.responseText);
+                }
+            };
+
+            xhr.send("name=" + encodeURIComponent(name) + "&message=" + encodeURIComponent(message));
+
+            getMessages();
+        }
+
         function getMessages() {
             var xhr = new XMLHttpRequest();
             var url = "http://192.168.4.1/get-messages";
@@ -51,12 +92,23 @@
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    document.getElementById("messages").innerText = xhr.responseText;
+                    var messages = xhr.responseText.split("\n");
+                    var formattedMessages = messages.map(function(message) {
+                        var parts = message.split(": ");
+                        if (parts.length === 2) {
+                            return "<b>" + parts[0] + ":</b> " + parts[1];
+                        } else {
+                            return message; // handle any lines that don't fit the format
+                        }
+                    }).join("<br>");
+
+                    document.getElementById("messages").innerHTML = formattedMessages;
                 }
             };
 
             xhr.send();
-        }
+        }   
+
     </script>
 
 </body>
