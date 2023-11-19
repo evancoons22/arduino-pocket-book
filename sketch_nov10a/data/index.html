@@ -7,6 +7,8 @@
     <h1>Hello</h1>
     <p>Go to <a href="http://192.168.4.1">192.168.4.1</a> on a web browser.</p>
 
+
+    <!--
     <audio controls>
         <source src="FTyouareloved.mp3" type="audio/mpeg">
         Your browser does not support audio
@@ -14,5 +16,48 @@
 
     <h3> Books </h3>
     <p>Click <a href="http://192.168.4.1/animalfarm.html">Animal Farm</a> for a book</p>
+    -->
+
+    <h2>Chat Room</h2>
+    <input type="text" id="messageBox" placeholder="Type your message here"/>
+    <button onclick="sendMessage()">Send</button>
+    <br> </br>
+    <button onclick="getMessages()">Refresh Messages</button>
+    <div id="messages"></div>
+
+    <script>
+        function sendMessage() {
+            var xhr = new XMLHttpRequest();
+            var url = "http://192.168.4.1/post-message";
+            var message = document.getElementById("messageBox").value;
+
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "text/plain");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert(xhr.responseText);
+                }
+            };
+
+            xhr.send(message);
+        }
+
+        function getMessages() {
+            var xhr = new XMLHttpRequest();
+            var url = "http://192.168.4.1/get-messages";
+
+            xhr.open("GET", url, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById("messages").innerText = xhr.responseText;
+                }
+            };
+
+            xhr.send();
+        }
+    </script>
+
 </body>
 </html>

@@ -39,6 +39,8 @@ void setup() {
     //File system begin
     SPIFFS.begin();
 
+    server.on("/post-message", HTTP_POST, postMessageHandler);
+    server.on("/get-messages", HTTP_GET, getMessagesHandler);
 
     //redirect all traffic to index.html
     server.onNotFound([]() {
@@ -57,6 +59,48 @@ void loop() {
     dnsServer.processNextRequest();
     server.handleClient();
     delay(50);
+}
+
+void getMessagesHandler() {
+  File file = SPIFFS.open("/data.txt", "r");
+  if (!file) {
+    server.send(500, "text/plain", "Failed to open file for reading");
+    return;
+  }
+
+  String fileContent;
+  while(file.available()){
+    fileContent += (char)file.read();
+  }
+
+  file.close();
+
+  server.send(200, "text/plain", fileContent);
+}
+
+void postMessageHandler() {
+  String message;
+  if (server.hasArg("plain") == false) {
+    message = "No message received";
+    server.send(200, "text/plain", message);
+    return;
+  }
+
+  message = server.arg("plain");
+
+  // Open the file for appending
+  File file = SPIFFS.open("/data.txt", "a");
+  if (!file) {
+    server.send(500, "text/plain", "Failed to open file for appending");
+    return;
+  }
+
+  // Append the message to the file
+  file.println(message);
+  file.close();
+
+  // Respond back to the client
+  server.send(200, "text/plain", "Message received and stored");
 }
 
 
